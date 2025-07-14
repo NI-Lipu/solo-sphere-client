@@ -1,25 +1,42 @@
 import { Link } from 'react-router-dom'
-import { useState, useEffect, useContext } from 'react'
+import { useState, useCallback, useEffect, useContext } from 'react'
 import axios from 'axios'
 import { AuthContext } from '../providers/AuthProvider'
+import Swal from 'sweetalert2'
 
 const MyPostedJobs = () => {
    const { user } = useContext(AuthContext)
    const [jobs, setJobs] = useState([])
-   useEffect(() => {
-      const fetchData = async () => {
-         try {
-            const { data } = await axios.get(
-               `${import.meta.env.VITE_API_URL}/jobs/${user?.email}`
-            )
-            setJobs(data)
-         } catch (err) {
-            console.log(err.message)
-         }
-      }
-      fetchData()
-   }, [user?.email])
 
+   const fetchData = useCallback(async () => {
+      try {
+         const { data } = await axios.get(
+            `${import.meta.env.VITE_API_URL}/jobs/${user?.email}`
+         )
+         setJobs(data)
+      } catch (err) {
+         console.log(err.message)
+      }
+   }, [user?.email])
+   useEffect(() => {
+      fetchData()
+   }, [fetchData])
+
+   //Delete Job
+   const handleDelete = async (id) => {
+      try {
+         await axios.delete(`${import.meta.env.VITE_API_URL}/job/${id}`)
+         Swal.fire({
+            title: 'Job Posted Successfully!',
+            text: 'Your job listing is now live.',
+            icon: 'success',
+            confirmButtonText: 'View Jobs',
+         })
+         fetchData()
+      } catch (err) {
+         console.log(err.message)
+      }
+   }
    return (
       <section className="container px-4 mx-auto pt-12">
          <div className="flex items-center gap-x-3">
@@ -110,7 +127,12 @@ const MyPostedJobs = () => {
                                  </td>
                                  <td className="px-4 py-4 text-sm whitespace-nowrap">
                                     <div className="flex items-center gap-x-6">
-                                       <button className="text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none">
+                                       <button
+                                          onClick={() =>
+                                             handleDelete(`${job._id}`)
+                                          }
+                                          className="text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none"
+                                       >
                                           <svg
                                              xmlns="http://www.w3.org/2000/svg"
                                              fill="none"
