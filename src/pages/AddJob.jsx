@@ -3,10 +3,13 @@ import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { AuthContext } from '../providers/AuthProvider'
 import axios from 'axios'
+import Swal from 'sweetalert2'
+import { useNavigate } from 'react-router-dom'
 
 const AddJob = () => {
    const [startDate, setStartDate] = useState(new Date())
    const { user } = useContext(AuthContext)
+   const navigate = useNavigate()
 
    const handleSubmit = async (e) => {
       e.preventDefault()
@@ -22,12 +25,35 @@ const AddJob = () => {
          name: user?.displayName,
          photo: user?.photoURL,
       }
+      if (!newJob.job_title || !newJob.min_price || !newJob.max_price) {
+         Swal.fire({
+            icon: 'warning',
+            title: 'Missing Fields',
+            text: 'Please fill out all required fields.',
+         })
+         return
+      }
 
-      const sendData = await axios.post(
-         `${import.meta.env.VITE_API_URL}/jobs`,
-         newJob
-      )
-      console.log(sendData.data)
+      try {
+         await axios.post(`${import.meta.env.VITE_API_URL}/jobs`, newJob)
+
+         Swal.fire({
+            title: 'Job Posted Successfully!',
+            text: 'Your job listing is now live.',
+            icon: 'success',
+            confirmButtonText: 'View Jobs',
+         })
+         e.target.reset()
+         navigate('/my-posted-jobs')
+      } catch (error) {
+         Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: error.message,
+            footer: '<a href="#">Why do I have this issue?</a>',
+         })
+         return
+      }
    }
 
    return (
