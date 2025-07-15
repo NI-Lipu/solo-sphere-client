@@ -25,7 +25,12 @@ const AddJob = () => {
          name: user?.displayName,
          photo: user?.photoURL,
       }
-      if (!newJob.job_title || !newJob.min_price || !newJob.max_price) {
+      if (
+         !newJob.job_title ||
+         !newJob.min_price ||
+         !newJob.max_price ||
+         !newJob.description
+      ) {
          Swal.fire({
             icon: 'warning',
             title: 'Missing Fields',
